@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         bottomNavigationView.setupWithNavController(navHostFragment.findNavController())
 
+        //Handling with navigation
         navHostFragment.findNavController()
                 .addOnDestinationChangedListener { _, destination, _ ->
                     when(destination.id){

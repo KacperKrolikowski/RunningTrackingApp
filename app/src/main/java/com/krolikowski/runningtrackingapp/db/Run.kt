@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+//Single run record model (in Room)
+
 @Entity(tableName = "running_table")
 data class Run(
     var img: Bitmap? = null,

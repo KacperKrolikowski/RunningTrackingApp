@@ -6,6 +6,7 @@ import androidx.room.*
 @Dao
 interface RunDAO {
 
+    //Functions for operating with Room
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRun(run: Run)
 

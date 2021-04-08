@@ -4,6 +4,7 @@ import com.krolikowski.runningtrackingapp.db.Run
 import com.krolikowski.runningtrackingapp.db.RunDAO
 import javax.inject.Inject
 
+//Giving access to functions from Room to VM
 class MainRepository @Inject constructor(
     val runDao: RunDAO
 ) {

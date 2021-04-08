@@ -16,6 +16,7 @@ import javax.inject.Singleton
 @InstallIn(ApplicationComponent::class)
 object AppModule {
 
+    //Creating dependency injections
     @Singleton
     @Provides
     fun provideRunningDatabase(
