@@ -5,9 +5,16 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.PolylineOptions
 import com.krolikowski.runningtrackingapp.R
 import com.krolikowski.runningtrackingapp.other.Constants.ACTION_START_OR_RESUME_SERVICE
+import com.krolikowski.runningtrackingapp.other.Constants.MAP_ZOOM
+import com.krolikowski.runningtrackingapp.other.Constants.POLYLINE_COLOR
+import com.krolikowski.runningtrackingapp.other.Constants.POLYLINE_WIDTH
+import com.krolikowski.runningtrackingapp.services.Polyline
+import com.krolikowski.runningtrackingapp.services.Polylines
 import com.krolikowski.runningtrackingapp.services.TrackingService
 import com.krolikowski.runningtrackingapp.ui.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,6 +24,9 @@ import kotlinx.android.synthetic.main.fragment_tracking.*
 class TrackingFragment : Fragment(R.layout.fragment_tracking) {
 
     private val viewModel: MainViewModel by viewModels()
+
+    private var isTracking = false
+    private var pathPoints = mutableListOf<Polyline>()
 
     private var map: GoogleMap? = null
 
@@ -31,6 +41,42 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking) {
 
         mapView.getMapAsync{
             map = it
+        }
+    }
+
+    //Move of google map "camera"
+    private fun moveCameraToUser(){
+        if (pathPoints.isNotEmpty() && pathPoints.last().isNotEmpty()){
+            map?.animateCamera(
+                    CameraUpdateFactory.newLatLngZoom(
+                            pathPoints.last().last(),
+                            MAP_ZOOM
+                    )
+            )
+        }
+    }
+
+    //Connectiong all points after rotate
+    private fun addAllPolylines(){
+        for (polyline in pathPoints){
+            val polylineOptions = PolylineOptions()
+                    .color(POLYLINE_COLOR)
+                    .width(POLYLINE_WIDTH)
+                    .addAll(polyline)
+        }
+    }
+
+    //Drawing a polyline
+    private fun addLatestPolyline(){
+        if(pathPoints.isNotEmpty() && pathPoints.last().size > 1){
+            val preLastLatLng = pathPoints.last()[pathPoints.last().size - 2]
+            val lastLatLng = pathPoints.last().last()
+            val polylineOptions = PolylineOptions()
+                    .color(POLYLINE_COLOR)
+                    .width(POLYLINE_WIDTH)
+                    .add(preLastLatLng)
+                    .add(lastLatLng)
+            map?.addPolyline(polylineOptions)
         }
     }
 
