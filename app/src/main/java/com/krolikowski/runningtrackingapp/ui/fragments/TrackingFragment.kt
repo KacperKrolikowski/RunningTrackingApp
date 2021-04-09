@@ -5,10 +5,12 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.PolylineOptions
 import com.krolikowski.runningtrackingapp.R
+import com.krolikowski.runningtrackingapp.other.Constants.ACTION_PAUSE_SERVICE
 import com.krolikowski.runningtrackingapp.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.krolikowski.runningtrackingapp.other.Constants.MAP_ZOOM
 import com.krolikowski.runningtrackingapp.other.Constants.POLYLINE_COLOR
@@ -36,11 +38,45 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking) {
         mapView.onCreate(savedInstanceState)
 
         btnToggleRun.setOnClickListener {
-            sendCommandToService(ACTION_START_OR_RESUME_SERVICE)
+            toggleRun()
         }
 
         mapView.getMapAsync{
             map = it
+            addAllPolylines()
+        }
+
+        subscribeToObservers()
+    }
+
+    private fun subscribeToObservers(){
+        TrackingService.isTracking.observe(viewLifecycleOwner, Observer {
+            updateTracking(it)
+        })
+
+        TrackingService.pathPoints.observe(viewLifecycleOwner, Observer {
+            pathPoints = it
+            addLatestPolyline()
+            moveCameraToUser()
+        })
+    }
+
+    private fun toggleRun(){
+        if (isTracking){
+            sendCommandToService(ACTION_PAUSE_SERVICE)
+        } else{
+            sendCommandToService(ACTION_START_OR_RESUME_SERVICE)
+        }
+    }
+
+    private fun updateTracking(isTracking: Boolean){
+        this.isTracking = isTracking
+        if (!isTracking){
+            btnToggleRun.text = "Start"
+            btnFinishRun.visibility = View.VISIBLE
+        } else{
+            btnToggleRun.text = "Stop"
+            btnFinishRun.visibility = View.GONE
         }
     }
 
