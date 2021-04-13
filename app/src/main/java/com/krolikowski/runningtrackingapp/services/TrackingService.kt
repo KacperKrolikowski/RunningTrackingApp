@@ -32,10 +32,12 @@ import com.krolikowski.runningtrackingapp.other.Constants.LOCATION_UPDATE_INTERV
 import com.krolikowski.runningtrackingapp.other.Constants.NOTIFICATION_CHANNEL_ID
 import com.krolikowski.runningtrackingapp.other.Constants.NOTIFICATION_CHANNEL_NAME
 import com.krolikowski.runningtrackingapp.other.Constants.NOTIFICATION_ID
+import com.krolikowski.runningtrackingapp.other.Constants.TIMER_UPDATE_INTERVAL
 import com.krolikowski.runningtrackingapp.other.TrackingUtility
 import com.krolikowski.runningtrackingapp.ui.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -85,7 +87,7 @@ class TrackingService : LifecycleService() {
                         isFirstRun = false
                     } else{
                         Timber.d("Resuming service...")
-                        startForegroundService()
+                        startTimer()
                     }
                 }
                 ACTION_PAUSE_SERVICE -> {
@@ -119,14 +121,18 @@ class TrackingService : LifecycleService() {
                 // Post the new lapTime
                 timeRunInMillis.postValue(timeRun + lapTime)
                 if(timeRunInMillis.value!! >= lastSecondTimestamp + 1000L) {
-
+                    timeRunInSeconds.postValue(timeRunInSeconds.value!! + 1)
+                    lastSecondTimestamp += 1000L
                 }
+                delay(TIMER_UPDATE_INTERVAL)
             }
+            timeRun += lapTime
         }
     }
 
     private fun pauseService(){
         isTracking.postValue(false)
+        isTimerEnabled = false
     }
 
     //Checking if user is tracking now
@@ -185,7 +191,7 @@ class TrackingService : LifecycleService() {
     //Notification service
     private fun startForegroundService(){
 
-        addEmptyPolyline()
+        startTimer()
         isTracking.postValue(true)
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE)
