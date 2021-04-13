@@ -47,6 +47,8 @@ typealias Polylines = MutableList<Polyline>
 
 class TrackingService : LifecycleService() {
 
+    var variable = 0
+
     var isFirstRun = true
 
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
