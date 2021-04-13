@@ -34,6 +34,9 @@ import com.krolikowski.runningtrackingapp.other.Constants.NOTIFICATION_CHANNEL_N
 import com.krolikowski.runningtrackingapp.other.Constants.NOTIFICATION_ID
 import com.krolikowski.runningtrackingapp.other.TrackingUtility
 import com.krolikowski.runningtrackingapp.ui.MainActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 //Easier presentation of data types
@@ -46,7 +49,11 @@ class TrackingService : LifecycleService() {
 
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
+    private val timeRunInSeconds = MutableLiveData<Long>()
+
     companion object{
+        val timeRunInMillis = MutableLiveData<Long>()
+
         val isTracking = MutableLiveData<Boolean>()
 
         val pathPoints = MutableLiveData<Polylines>()
@@ -92,6 +99,30 @@ class TrackingService : LifecycleService() {
             }
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    private var isTimerEnabled = false
+    private var lapTime = 0L
+    private var timeRun = 0L
+    private var timeStarted = 0L
+    private var lastSecondTimestamp = 0L
+
+    private fun startTimer(){
+        addEmptyPolyline()
+        isTracking.postValue(true)
+        timeStarted = System.currentTimeMillis()
+        isTimerEnabled = true
+        CoroutineScope(Dispatchers.Main).launch {
+            while (isTracking.value!!){
+                // Time difference between now and timeStarted
+                lapTime = System.currentTimeMillis() - timeStarted
+                // Post the new lapTime
+                timeRunInMillis.postValue(timeRun + lapTime)
+                if(timeRunInMillis.value!! >= lastSecondTimestamp + 1000L) {
+
+                }
+            }
+        }
     }
 
     private fun pauseService(){
